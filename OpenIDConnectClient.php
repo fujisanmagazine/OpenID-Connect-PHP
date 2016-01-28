@@ -194,20 +194,20 @@ class OpenIDConnectClient
                 throw new OpenIDConnectClientException("Unable to determine state");
             }
 
-	    if (!property_exists($token_json, 'id_token')) {
-		throw new OpenIDConnectClientException("User did not authorize openid scope.");
-	    }
+            if (!property_exists($token_json, 'id_token')) {
+                throw new OpenIDConnectClientException("User did not authorize openid scope.");
+            }
 
-            $claims = $this->decodeJWT($token_json->id_token, 1);
+                $claims = $this->decodeJWT($token_json->id_token, 1);
 
-	    // Verify the signature
-	    if ($this->canVerifySignatures()) {
-		if (!$this->verifyJWTsignature($token_json->id_token)) {
-		    throw new OpenIDConnectClientException ("Unable to verify signature");
-		}
-	    } else {
-		user_error("Warning: JWT signature verification unavailable.");
-	    }
+            // Verify the signature
+            if ($this->canVerifySignatures()) {
+                if (!$this->verifyJWTsignature($token_json->id_token)) {
+                    throw new OpenIDConnectClientException ("Unable to verify signature");
+                }
+            } else {
+                user_error("Warning: JWT signature verification unavailable.");
+            }
 
             // If this is a valid claim
             if ($this->verifyJWTclaims($claims)) {
@@ -397,7 +397,7 @@ class OpenIDConnectClient
     /**
      * Requests Access token with refresh token
      *
-     * @param $code
+     * @param $refresh_token
      * @return mixed
      */
     public function refreshToken($refresh_token) {
@@ -417,6 +417,7 @@ class OpenIDConnectClient
 
         $json = json_decode($this->fetchURL($token_endpoint, $token_params));
         $this->refreshToken = $json->refresh_token;
+        $this->accessToken  = $json->access_token;
 
         return $json;
     }
@@ -811,5 +812,19 @@ class OpenIDConnectClient
         return $this->refreshToken;
     }
 
+    /**
+     * @param $accessToken
+     * @return void
+     */
+    public function setAccessToken($accessToken) {
+        $this->accessToken = $accessToken;
+    }
 
+    /**
+     * @param $refreshToken
+     * @return void
+     */
+    public function setRefreshToken($refreshToken) {
+        $this->refreshToken = $refreshToken;
+    }
 }
