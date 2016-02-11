@@ -147,6 +147,9 @@ class OpenIDConnectClient
      */
     private $authParams = array();
 
+    // attributes to support basic auth
+    private $basic_auth = null;
+
     /**
      * @param $provider_url string optional
      *
@@ -154,10 +157,12 @@ class OpenIDConnectClient
      * @param $client_secret string optional
      *
      */
-    public function __construct($provider_url = null, $client_id = null, $client_secret = null) {
+    public function __construct($provider_url = null, $client_id = null, $client_secret = null, $basic_auth = false) {
         $this->setProviderURL($provider_url);
         $this->clientID = $client_id;
         $this->clientSecret = $client_secret;
+
+        $this->basic_auth = $basic_auth;
     }
 
     /**
@@ -620,7 +625,6 @@ class OpenIDConnectClient
                 "Content-Type: {$content_type}",
                 'Content-Length: ' . strlen($post_body)
             ));
-
         }
 
         // Set URL to download
@@ -628,6 +632,13 @@ class OpenIDConnectClient
 
         if (isset($this->httpProxy)) {
             curl_setopt($ch, CURLOPT_PROXY, $this->httpProxy);
+        }
+
+        if (isset($this->basic_auth)) {
+            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+
+            curl_setopt($ch, CURLOPT_USERPWD, $this->clientID . ":"
+                . $this->clientSecret);
         }
 
         // Include header in result? (0 = yes, 1 = no)
